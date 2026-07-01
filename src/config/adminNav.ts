@@ -25,7 +25,8 @@ export interface AdminNavItem {
     | "settings"
     | "users"
     | "roles"
-    | "integrations";
+    | "integrations"
+    | "aiManager";
 }
 
 export interface AdminNavGroup {
@@ -77,6 +78,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { href: "/admin/knowledge-base", labelKey: "knowledgeBase" },
       { href: "/admin/translations", labelKey: "translations" },
       { href: "/admin/seo", labelKey: "seo" },
+      { href: "/admin/ai-manager", labelKey: "aiManager" },
     ],
   },
   {
