@@ -5,11 +5,12 @@ import { getBookingByCode, canCancelFreely } from "@/lib/data/bookings";
 import { getRoomBySlug, getRooms } from "@/lib/data/rooms";
 import { StatusBadge } from "@/components/admin/AdminTable";
 import { BookingDetailClient } from "@/components/portal/BookingDetailClient";
+import { UpsellRecommendations } from "@/components/portal/UpsellRecommendations";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default async function PortalBookingDetailPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  const { dict } = await getServerDictionary();
+  const { dict, locale } = await getServerDictionary();
   const session = await getPortalSession();
   const booking = await getBookingByCode(code);
   // Only the guest owning the booking may view its details/invoice — the
@@ -41,6 +42,8 @@ export default async function PortalBookingDetailPage({ params }: { params: Prom
         <div className="mt-10">
           <BookingDetailClient booking={booking} dict={dict} canCancelFree={canCancelFreely(booking.checkIn)} />
         </div>
+
+        {booking.status !== "cancelled" && <UpsellRecommendations code={booking.code} locale={locale} dict={dict} />}
       </div>
 
       <aside>
