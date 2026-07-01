@@ -26,11 +26,11 @@ export default async function PortalBookingDetailPage({ params }: { params: Prom
           <Field label={dict.footer.checkIn} value={formatDate(booking.checkIn)} />
           <Field label={dict.footer.checkOut} value={formatDate(booking.checkOut)} />
           <Field label={dict.common.guests} value={`${booking.guests.adults} + ${booking.guests.children}`} />
-          <Field label="Cod" value={booking.code} />
+          <Field label={dict.common.bookingCode} value={booking.code} />
         </div>
         <p className="mt-6 font-display text-2xl text-champagne">{room?.name.ro}</p>
         <a href={`/api/portal/bookings/${booking.code}/ics`} className="mt-3 inline-block text-xs uppercase tracking-widest text-champagne underline">
-          Export calendar (.ics)
+          {dict.portal.exportCalendar}
         </a>
 
         <div className="mt-10">
@@ -41,8 +41,8 @@ export default async function PortalBookingDetailPage({ params }: { params: Prom
       <aside>
         <h2 className="font-display text-xl text-ivory">{dict.portal.invoices}</h2>
         <div className="mt-4 rounded-sm border border-platinum/15 bg-graphite p-6 text-sm">
-          <Row label="Cazare" value={formatCurrency(booking.totals.roomSubtotal, booking.totals.currency)} />
-          <Row label="Servicii extra" value={formatCurrency(booking.totals.extrasSubtotal, booking.totals.currency)} />
+          <Row label={dict.common.accommodationCost} value={formatCurrency(booking.totals.roomSubtotal, booking.totals.currency)} />
+          <Row label={dict.common.extraServicesCost} value={formatCurrency(booking.totals.extrasSubtotal, booking.totals.currency)} />
           <Row label={dict.common.discount} value={`- ${formatCurrency(booking.totals.discountAmount, booking.totals.currency)}`} />
           <Row label={dict.common.taxes} value={formatCurrency(booking.totals.taxAmount, booking.totals.currency)} />
           <div className="mt-3 flex justify-between border-t border-platinum/10 pt-3 font-display text-lg text-champagne">

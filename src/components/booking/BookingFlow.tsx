@@ -160,11 +160,29 @@ export function BookingFlow({ locale, dict, rooms, services }: { locale: Locale;
           </div>
           <div>
             <label className={labelClass}>{dict.bookingWidget.adults}</label>
-            <input type="number" min={1} value={adults} onChange={(e) => setAdults(Number(e.target.value))} className={fieldClass} />
+            <input
+              type="number"
+              min={1}
+              value={adults}
+              onChange={(e) => {
+                const parsed = Number.parseInt(e.target.value, 10);
+                setAdults(Number.isNaN(parsed) ? 1 : Math.max(1, parsed));
+              }}
+              className={fieldClass}
+            />
           </div>
           <div>
             <label className={labelClass}>{dict.bookingWidget.children}</label>
-            <input type="number" min={0} value={children} onChange={(e) => setChildren(Number(e.target.value))} className={fieldClass} />
+            <input
+              type="number"
+              min={0}
+              value={children}
+              onChange={(e) => {
+                const parsed = Number.parseInt(e.target.value, 10);
+                setChildren(Number.isNaN(parsed) ? 0 : Math.max(0, parsed));
+              }}
+              className={fieldClass}
+            />
           </div>
           {Array.from({ length: children }).map((_, i) => (
             <div key={i}>
@@ -175,8 +193,11 @@ export function BookingFlow({ locale, dict, rooms, services }: { locale: Locale;
                 max={17}
                 value={childAges[i] ?? 0}
                 onChange={(e) => {
+                  const raw = e.target.value.replace(/^0+(?=\d)/, "");
+                  const parsed = Number.parseInt(raw, 10);
+                  const clamped = Number.isNaN(parsed) ? 0 : Math.min(17, Math.max(0, parsed));
                   const next = [...childAges];
-                  next[i] = Number(e.target.value);
+                  next[i] = clamped;
                   setChildAges(next);
                 }}
                 className={fieldClass}

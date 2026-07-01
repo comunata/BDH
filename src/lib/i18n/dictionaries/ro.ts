@@ -42,6 +42,9 @@ const ro = {
     discount: "Reducere",
     promoCode: "Cod promoțional",
     giftVoucher: "Voucher cadou",
+    bookingCode: "Cod",
+    accommodationCost: "Cazare",
+    extraServicesCost: "Servicii extra",
   },
   nav: {
     home: "Acasă",
@@ -191,6 +194,7 @@ const ro = {
     aiConversations: "Conversații AI",
     signOut: "Deconectare",
     signIn: "Autentificare",
+    exportCalendar: "Exportă calendar (.ics)",
   },
   admin: {
     nav: {

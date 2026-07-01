@@ -53,11 +53,31 @@ export function BookingWidget({ locale, dict, floating = false }: { locale: Loca
       </div>
       <div className="col-span-1">
         <label className={labelClass}>{dict.bookingWidget.adults}</label>
-        <input type="number" min={1} max={12} value={adults} onChange={(e) => setAdults(Number(e.target.value))} className={fieldClass} />
+        <input
+          type="number"
+          min={1}
+          max={12}
+          value={adults}
+          onChange={(e) => {
+            const parsed = Number.parseInt(e.target.value, 10);
+            setAdults(Number.isNaN(parsed) ? 1 : Math.min(12, Math.max(1, parsed)));
+          }}
+          className={fieldClass}
+        />
       </div>
       <div className="col-span-1">
         <label className={labelClass}>{dict.bookingWidget.children}</label>
-        <input type="number" min={0} max={8} value={children} onChange={(e) => setChildren(Number(e.target.value))} className={fieldClass} />
+        <input
+          type="number"
+          min={0}
+          max={8}
+          value={children}
+          onChange={(e) => {
+            const parsed = Number.parseInt(e.target.value, 10);
+            setChildren(Number.isNaN(parsed) ? 0 : Math.min(8, Math.max(0, parsed)));
+          }}
+          className={fieldClass}
+        />
       </div>
       <div className="col-span-1">
         <label className={labelClass}>{dict.bookingWidget.promoCode}</label>

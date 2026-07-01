@@ -6,7 +6,7 @@ import type { Dictionary } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
 
-export function RoomCard({ room, locale, dict }: { room: Room; locale: Locale; dict: Dictionary }) {
+export function RoomCard({ room, locale, dict, priority = false }: { room: Room; locale: Locale; dict: Dictionary; priority?: boolean }) {
   const name = room.name[locale] ?? room.name.en;
   const description = room.description[locale] ?? room.description.en;
 
@@ -19,6 +19,7 @@ export function RoomCard({ room, locale, dict }: { room: Room; locale: Locale; d
             alt={name}
             fill
             sizes="(min-width: 768px) 33vw, 100vw"
+            priority={priority}
             className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
         </div>

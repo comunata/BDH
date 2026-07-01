@@ -44,6 +44,9 @@ const en: Dictionary = {
     discount: "Discount",
     promoCode: "Promo code",
     giftVoucher: "Gift voucher",
+    bookingCode: "Code",
+    accommodationCost: "Accommodation",
+    extraServicesCost: "Extra services",
   },
   nav: {
     home: "Home",
@@ -193,6 +196,7 @@ const en: Dictionary = {
     aiConversations: "AI conversations",
     signOut: "Sign out",
     signIn: "Sign in",
+    exportCalendar: "Export calendar (.ics)",
   },
   admin: {
     nav: {

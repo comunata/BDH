@@ -48,7 +48,7 @@ export function ChatWidget({ locale, dict }: { locale: Locale; dict: Dictionary 
   return (
     <div className="fixed bottom-6 right-6 z-50">
       {open && (
-        <div className="mb-4 flex h-[28rem] w-[22rem] flex-col overflow-hidden rounded-sm border border-platinum/20 bg-graphite shadow-2xl animate-fade-up">
+        <div className="mb-4 flex h-[28rem] w-[22rem] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-sm border border-platinum/20 bg-graphite shadow-2xl animate-fade-up">
           <div className="flex items-center justify-between border-b border-platinum/10 px-4 py-3">
             <p className="font-display text-lg text-ivory">{dict.ai.concierge.title}</p>
             <button onClick={() => setOpen(false)} className="text-stone hover:text-ivory">
