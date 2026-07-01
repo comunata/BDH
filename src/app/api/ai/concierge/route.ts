@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getKnowledgeBase } from "@/lib/data/content";
 import { getRooms } from "@/lib/data/rooms";
+import { getBookingsForGuestEmail } from "@/lib/data/bookings";
+import { getPortalSession } from "@/lib/portal/session";
 import { completeChat } from "@/lib/integrations/ai";
 import { getDictionary } from "@/lib/i18n";
 import { isLocale, defaultLocale } from "@/lib/i18n/config";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 const requestSchema = z.object({
   question: z.string().min(1).max(1000),
@@ -42,7 +44,22 @@ export async function POST(request: NextRequest) {
 
   const matchedRoom = rooms.find((r) => normalize(question).includes(normalize(r.name.ro)) || normalize(question).includes(normalize(r.name.en)));
 
-  if (!bestMatch && !matchedRoom) {
+  // The AI Concierge runs inside the authenticated Portal Client, so when a
+  // guest asks about "my stay/booking/reservation", ground the answer in
+  // *their own* booking data only (never another guest's), matched via the
+  // real portal session email — never trusted client input.
+  const bookingKeywords = ["rezervarea mea", "sejurul meu", "my booking", "my stay", "my reservation", "cazarea mea"];
+  const asksAboutOwnBooking = bookingKeywords.some((k) => normalize(question).includes(normalize(k)));
+  let matchedBooking: Awaited<ReturnType<typeof getBookingsForGuestEmail>>[number] | undefined;
+  if (asksAboutOwnBooking) {
+    const session = await getPortalSession();
+    if (session.authenticated && session.email) {
+      const bookings = await getBookingsForGuestEmail(session.email);
+      matchedBooking = bookings.find((b) => b.status !== "cancelled") ?? bookings[0];
+    }
+  }
+
+  if (!bestMatch && !matchedRoom && !matchedBooking) {
     return NextResponse.json({ answer: dict.ai.concierge.handoffText, handoff: true });
   }
 
@@ -51,6 +68,14 @@ export async function POST(request: NextRequest) {
   if (matchedRoom) {
     groundingFacts.push(
       `Room "${matchedRoom.name[locale] ?? matchedRoom.name.en}": from ${formatCurrency(matchedRoom.basePrice)}/night, max ${matchedRoom.maxAdults} adults + ${matchedRoom.maxChildren} children, ${matchedRoom.sizeSqm} m². Amenities: ${matchedRoom.amenities.join(", ")}.`
+    );
+  }
+  if (matchedBooking) {
+    const room = rooms.find((r) => r.id === matchedBooking.roomId);
+    groundingFacts.push(
+      `Guest's own booking ${matchedBooking.code}: room "${room?.name[locale] ?? room?.name.en ?? matchedBooking.roomId}", ` +
+        `${formatDate(matchedBooking.checkIn)} to ${formatDate(matchedBooking.checkOut)}, status ${matchedBooking.status}, ` +
+        `total ${formatCurrency(matchedBooking.totals.total, matchedBooking.totals.currency)}.`
     );
   }
 
