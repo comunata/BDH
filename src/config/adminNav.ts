@@ -21,6 +21,7 @@ export interface AdminNavItem {
     | "knowledgeBase"
     | "translations"
     | "seo"
+    | "pages"
     | "settings"
     | "users"
     | "roles"
@@ -72,6 +73,7 @@ export const adminNavGroups: AdminNavGroup[] = [
   {
     title: "AI & Content",
     items: [
+      { href: "/admin/pages", labelKey: "pages" },
       { href: "/admin/knowledge-base", labelKey: "knowledgeBase" },
       { href: "/admin/translations", labelKey: "translations" },
       { href: "/admin/seo", labelKey: "seo" },

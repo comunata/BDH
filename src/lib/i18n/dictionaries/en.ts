@@ -220,6 +220,7 @@ const en: Dictionary = {
       knowledgeBase: "AI Knowledge Base",
       translations: "Translations",
       seo: "SEO",
+      pages: "Pages (CMS)",
       settings: "Settings",
       users: "Users",
       roles: "Roles",

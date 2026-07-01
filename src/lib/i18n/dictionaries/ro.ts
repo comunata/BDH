@@ -218,6 +218,7 @@ const ro = {
       knowledgeBase: "AI Knowledge Base",
       translations: "Traduceri",
       seo: "SEO",
+      pages: "Pagini (CMS)",
       settings: "Setări",
       users: "Utilizatori",
       roles: "Roluri",
