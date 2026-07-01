@@ -197,6 +197,23 @@ const en: Dictionary = {
     signOut: "Sign out",
     signIn: "Sign in",
     exportCalendar: "Export calendar (.ics)",
+    auth: {
+      emailLabel: "Email address",
+      emailPlaceholder: "name@example.com",
+      sendCode: "Send code",
+      sending: "Sending...",
+      codeSentTo: "We sent a 6-digit code to",
+      codeLabel: "Verification code",
+      codePlaceholder: "123456",
+      verify: "Verify",
+      verifying: "Verifying...",
+      changeEmail: "Change email address",
+      resendCode: "Resend code",
+      invalidCode: "Invalid or expired code. Please try again.",
+      genericError: "Something went wrong. Please try again.",
+      signInTitle: "Portal Sign In",
+      signInSubtitle: "Enter your email to receive an access code.",
+    },
   },
   admin: {
     nav: {

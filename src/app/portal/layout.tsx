@@ -1,6 +1,8 @@
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getPortalSession } from "@/lib/portal/session";
 import { PortalSidebar } from "@/components/portal/PortalSidebar";
+import { PortalLoginForm } from "@/components/portal/PortalLoginForm";
+import { PortalSignOutButton } from "@/components/portal/PortalSignOutButton";
 import { LocaleSwitcher } from "@/components/layout/LocaleSwitcher";
 
 export const metadata = { title: "Portal Client", robots: { index: false, follow: false } };
@@ -12,10 +14,7 @@ export default async function PortalLayout({ children }: { children: React.React
   if (!session.authenticated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-midnight px-6 text-center">
-        <div>
-          <p className="font-display text-2xl text-ivory">{dict.portal.signIn}</p>
-          <p className="mt-2 text-sm text-stone">Autentifică-te pentru a-ți vedea rezervările.</p>
-        </div>
+        <PortalLoginForm dict={dict} />
       </div>
     );
   }
@@ -32,7 +31,10 @@ export default async function PortalLayout({ children }: { children: React.React
               </span>
             )}
           </div>
-          <LocaleSwitcher current={locale} />
+          <div className="flex items-center gap-3">
+            <LocaleSwitcher current={locale} />
+            {!session.demoMode && <PortalSignOutButton dict={dict} />}
+          </div>
         </header>
         <main className="p-6 md:p-10">{children}</main>
       </div>

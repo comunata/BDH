@@ -195,6 +195,23 @@ const ro = {
     signOut: "Deconectare",
     signIn: "Autentificare",
     exportCalendar: "Exportă calendar (.ics)",
+    auth: {
+      emailLabel: "Adresa de email",
+      emailPlaceholder: "nume@exemplu.com",
+      sendCode: "Trimite cod",
+      sending: "Se trimite...",
+      codeSentTo: "Am trimis un cod de 6 cifre la",
+      codeLabel: "Cod de verificare",
+      codePlaceholder: "123456",
+      verify: "Confirmă",
+      verifying: "Se verifică...",
+      changeEmail: "Schimbă adresa de email",
+      resendCode: "Retrimite codul",
+      invalidCode: "Cod invalid sau expirat. Încearcă din nou.",
+      genericError: "A apărut o eroare. Încearcă din nou.",
+      signInTitle: "Autentificare Portal Client",
+      signInSubtitle: "Introdu adresa de email pentru a primi un cod de acces.",
+    },
   },
   admin: {
     nav: {
