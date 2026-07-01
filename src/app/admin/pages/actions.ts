@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { upsertPage } from "@/lib/data/pages";
+import { assertAdminRole } from "@/lib/admin/session";
 
 const pageSchema = z.object({
   slug: z.string().min(1),
@@ -26,6 +27,7 @@ function linesToArray(value?: string): string[] {
 }
 
 export async function savePageAction(_prevState: PageFormState, formData: FormData): Promise<PageFormState> {
+  await assertAdminRole("owner", "manager");
   const raw = Object.fromEntries(formData.entries());
   const parsed = pageSchema.safeParse(raw);
   if (!parsed.success) {

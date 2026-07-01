@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { createRoomBlock, deleteRoomBlock } from "@/lib/data/availability";
+import { assertAdminRole } from "@/lib/admin/session";
 
 const blockSchema = z.object({
   roomId: z.string().min(1, "Selectează o cameră"),
@@ -16,6 +17,7 @@ export interface BlockFormState {
 }
 
 export async function createRoomBlockAction(_prevState: BlockFormState, formData: FormData): Promise<BlockFormState> {
+  await assertAdminRole("owner", "manager", "staff");
   const raw = Object.fromEntries(formData.entries());
   const parsed = blockSchema.safeParse(raw);
   if (!parsed.success) {
@@ -37,6 +39,7 @@ export async function createRoomBlockAction(_prevState: BlockFormState, formData
 }
 
 export async function deleteRoomBlockAction(id: string): Promise<void> {
+  await assertAdminRole("owner", "manager", "staff");
   await deleteRoomBlock(id);
   revalidatePath("/admin/calendar");
 }

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createService, updateService, deleteService } from "@/lib/data/services";
 import { slugify } from "@/lib/utils";
+import { assertAdminRole } from "@/lib/admin/session";
 import type { ExtraService } from "@/lib/types";
 
 const serviceSchema = z.object({
@@ -27,6 +28,7 @@ export interface ServiceFormState {
 }
 
 export async function saveServiceAction(_prevState: ServiceFormState, formData: FormData): Promise<ServiceFormState> {
+  await assertAdminRole("owner", "manager", "staff");
   const raw = Object.fromEntries(formData.entries());
   const parsed = serviceSchema.safeParse(raw);
 
@@ -65,6 +67,7 @@ export async function saveServiceAction(_prevState: ServiceFormState, formData: 
 }
 
 export async function deleteServiceAction(id: string): Promise<void> {
+  await assertAdminRole("owner", "manager");
   await deleteService(id);
   revalidatePath("/admin/services");
 }

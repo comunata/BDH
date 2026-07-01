@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createAttraction, updateAttraction, deleteAttraction, createLocalEvent, updateLocalEvent, deleteLocalEvent } from "@/lib/data/explore";
+import { assertAdminRole } from "@/lib/admin/session";
 import type { Attraction, LocalEvent } from "@/lib/types";
 
 const attractionSchema = z.object({
@@ -34,6 +35,7 @@ function linesToArray(value?: string): string[] {
 }
 
 export async function saveAttractionAction(_prevState: AttractionFormState, formData: FormData): Promise<AttractionFormState> {
+  await assertAdminRole("owner", "manager", "staff");
   const raw = {
     ...Object.fromEntries(formData.entries()),
     goodFor: formData.getAll("goodFor"),
@@ -77,6 +79,7 @@ export async function saveAttractionAction(_prevState: AttractionFormState, form
 }
 
 export async function deleteAttractionAction(id: string): Promise<void> {
+  await assertAdminRole("owner", "manager", "staff");
   await deleteAttraction(id);
   revalidatePath("/admin/attractions");
   revalidatePath("/admin/restaurants");
@@ -99,6 +102,7 @@ export interface EventFormState {
 }
 
 export async function saveEventAction(_prevState: EventFormState, formData: FormData): Promise<EventFormState> {
+  await assertAdminRole("owner", "manager", "staff");
   const raw = Object.fromEntries(formData.entries());
   const parsed = eventSchema.safeParse(raw);
 
@@ -132,6 +136,7 @@ export async function saveEventAction(_prevState: EventFormState, formData: Form
 }
 
 export async function deleteEventAction(id: string): Promise<void> {
+  await assertAdminRole("owner", "manager", "staff");
   await deleteLocalEvent(id);
   revalidatePath("/admin/events");
   revalidatePath("/admin/explore");

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSeason, updateSeason, deleteSeason } from "@/lib/data/seasons";
+import { assertAdminRole } from "@/lib/admin/session";
 
 const seasonSchema = z.object({
   id: z.string().optional(),
@@ -22,6 +23,7 @@ export interface SeasonFormState {
 }
 
 export async function saveSeasonAction(_prevState: SeasonFormState, formData: FormData): Promise<SeasonFormState> {
+  await assertAdminRole("owner", "manager");
   const raw = Object.fromEntries(formData.entries());
   const parsed = seasonSchema.safeParse(raw);
 
@@ -61,6 +63,7 @@ export async function saveSeasonAction(_prevState: SeasonFormState, formData: Fo
 }
 
 export async function deleteSeasonAction(id: string): Promise<void> {
+  await assertAdminRole("owner", "manager");
   await deleteSeason(id);
   revalidatePath("/admin/seasons");
   revalidatePath("/admin/rates");

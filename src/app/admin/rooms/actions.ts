@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createRoom, updateRoom, deleteRoom, getRoomById } from "@/lib/data/rooms";
 import { slugify } from "@/lib/utils";
+import { assertAdminRole } from "@/lib/admin/session";
 import type { Room } from "@/lib/types";
 
 const roomSchema = z.object({
@@ -42,6 +43,7 @@ function linesToArray(value?: string): string[] {
 }
 
 export async function saveRoomAction(_prevState: RoomFormState, formData: FormData): Promise<RoomFormState> {
+  await assertAdminRole("owner", "manager", "staff");
   const raw = Object.fromEntries(formData.entries());
   const parsed = roomSchema.safeParse(raw);
 
@@ -95,6 +97,7 @@ export async function saveRoomAction(_prevState: RoomFormState, formData: FormDa
 }
 
 export async function deleteRoomAction(id: string): Promise<void> {
+  await assertAdminRole("owner", "manager");
   await deleteRoom(id);
   revalidatePath("/admin/rooms");
 }

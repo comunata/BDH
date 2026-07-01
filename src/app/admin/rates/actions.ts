@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { setRoomRateOverride } from "@/lib/data/seasons";
+import { assertAdminRole } from "@/lib/admin/session";
 
 export async function setRateOverrideAction(formData: FormData): Promise<void> {
+  await assertAdminRole("owner", "manager");
   const roomId = String(formData.get("roomId"));
   const seasonId = String(formData.get("seasonId"));
   const raw = String(formData.get("overridePrice") ?? "").trim();
