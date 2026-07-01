@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getBookingByCode, cancelBooking, updateSpecialRequests, canCancelFreely } from "@/lib/data/bookings";
+import { getPortalSession } from "@/lib/portal/session";
 
 const patchSchema = z.object({
   action: z.enum(["cancel", "special_requests"]),
@@ -11,6 +12,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   const { code } = await params;
   const booking = await getBookingByCode(code);
   if (!booking) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+  // Authorization: the caller must be an authenticated portal session whose
+  // email matches the booking's guest email. This closes an IDOR where any
+  // caller could PATCH (cancel / edit special requests on) any booking code,
+  // since the code alone is guessable/enumerable and this route used to
+  // trust it as sufficient proof of ownership.
+  const session = await getPortalSession();
+  if (!session.authenticated) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  if (session.email.toLowerCase() !== booking.guest.email.toLowerCase()) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
 
   const body = await request.json().catch(() => null);
   const parsed = patchSchema.safeParse(body);
