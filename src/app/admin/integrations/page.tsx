@@ -1,9 +1,13 @@
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getIntegrationStatuses } from "@/lib/integrations/status";
+import { requireAdminRole } from "@/lib/admin/session";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { StatusBadge } from "@/components/admin/AdminTable";
 
 export default async function AdminIntegrationsPage() {
+  // Owner-only: this page lists which integrations are configured, which is
+  // sensitive operational detail (though not the secret values themselves).
+  await requireAdminRole("owner");
   const { dict } = await getServerDictionary();
   const statuses = getIntegrationStatuses();
 

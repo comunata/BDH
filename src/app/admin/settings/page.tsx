@@ -1,10 +1,12 @@
 import { getServerDictionary } from "@/lib/i18n/server";
 import { MODULES, moduleFlags } from "@/config/modules";
+import { requireAdminRole } from "@/lib/admin/session";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { StatusBadge } from "@/components/admin/AdminTable";
 import { siteConfig } from "@/config/site";
 
 export default async function AdminSettingsPage() {
+  await requireAdminRole("owner", "manager");
   const { dict } = await getServerDictionary();
 
   return (
