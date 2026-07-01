@@ -1,6 +1,29 @@
 import type { Room } from "@/lib/types";
 
-const img = (seed: string, i: number) => `https://picsum.photos/seed/baeco-${seed}-${i}/1600/1000`;
+const roomImages = [
+  "/images/rooms/0bc1db016de67a6018b28a962c4235a3.jpg",
+  "/images/rooms/11a74378b5b294b08a8aa2a53fa2eb6f.jpg",
+  "/images/rooms/17fcbb4bd85678d0630b2f35d98d6146.jpg",
+  "/images/rooms/1c99389c2b9cfe99984110a101fe9cb3.jpg",
+  "/images/rooms/2b4de71c3a383954ccff89cfac62dac0.jpg",
+  "/images/rooms/31357a6c4a3eb846e510ece4e143128d.jpg",
+  "/images/rooms/374ca2ebccc9fa1f6b2fff433e4a30bc.jpg",
+  "/images/rooms/3c976d22ce8fc29f7df8aace820809ed.jpg",
+  "/images/rooms/45bfd01b44e62b2aa51d9f2ac4036352.jpg",
+  "/images/rooms/547cb88dbd2a5df54a8a3d207656934a.jpg",
+  "/images/rooms/653ce1cfa7e91fc2ad376fd1e78add66.jpg",
+  "/images/rooms/bbc8521dd38d833a5a7553c1d28ad7bc.jpg",
+  "/images/rooms/d443e715cb0491634f88ec1c76d94a4e.jpg",
+  "/images/rooms/e5636937f9c9255c1c5398aacfb71352.jpg",
+  "/images/rooms/f0423adcacf137318d73fcf2186314d9.jpg",
+];
+
+// Deterministic pick so each room gets a stable set of real local photos,
+// reusing images when there are more gallery slots than distinct photos.
+const img = (seed: string, i: number) => {
+  const seedIndex = [...seed].reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return roomImages[(seedIndex + i) % roomImages.length];
+};
 
 export const seedRooms: Room[] = [
   {

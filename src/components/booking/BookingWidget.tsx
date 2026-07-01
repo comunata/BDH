@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const tomorrow = () => {
@@ -43,13 +44,19 @@ export function BookingWidget({ locale, dict, floating = false }: { locale: Loca
         floating && "shadow-2xl"
       )}
     >
-      <div className="col-span-1">
-        <label className={labelClass}>{dict.bookingWidget.checkIn}</label>
-        <input type="date" value={checkIn} min={today()} onChange={(e) => setCheckIn(e.target.value)} className={fieldClass} />
-      </div>
-      <div className="col-span-1">
-        <label className={labelClass}>{dict.bookingWidget.checkOut}</label>
-        <input type="date" value={checkOut} min={checkIn} onChange={(e) => setCheckOut(e.target.value)} className={fieldClass} />
+      <div className="col-span-2 md:col-span-2">
+        <DateRangePicker
+          checkIn={checkIn}
+          checkOut={checkOut}
+          minDate={today()}
+          locale={locale}
+          checkInLabel={dict.bookingWidget.checkIn}
+          checkOutLabel={dict.bookingWidget.checkOut}
+          onChange={({ checkIn: ci, checkOut: co }) => {
+            setCheckIn(ci);
+            setCheckOut(co);
+          }}
+        />
       </div>
       <div className="col-span-1">
         <label className={labelClass}>{dict.bookingWidget.adults}</label>

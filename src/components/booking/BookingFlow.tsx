@@ -8,6 +8,7 @@ import type { Dictionary } from "@/lib/i18n";
 import type { Room, ExtraService, PriceBreakdown } from "@/lib/types";
 import { formatCurrency, cn } from "@/lib/utils";
 import { Card } from "@/components/ui/Card";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
 
 type Step = "room" | "details" | "confirmed";
 
@@ -150,13 +151,18 @@ export function BookingFlow({ locale, dict, rooms, services }: { locale: Locale;
     <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
       <div className="md:col-span-2">
         <div className="mb-8 grid grid-cols-2 gap-4 rounded-sm border border-platinum/10 bg-graphite/50 p-6 sm:grid-cols-4">
-          <div>
-            <label className={labelClass}>{dict.bookingWidget.checkIn}</label>
-            <input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className={fieldClass} />
-          </div>
-          <div>
-            <label className={labelClass}>{dict.bookingWidget.checkOut}</label>
-            <input type="date" value={checkOut} min={checkIn} onChange={(e) => setCheckOut(e.target.value)} className={fieldClass} />
+          <div className="col-span-2">
+            <DateRangePicker
+              checkIn={checkIn}
+              checkOut={checkOut}
+              locale={locale}
+              checkInLabel={dict.bookingWidget.checkIn}
+              checkOutLabel={dict.bookingWidget.checkOut}
+              onChange={({ checkIn: ci, checkOut: co }) => {
+                setCheckIn(ci);
+                setCheckOut(co);
+              }}
+            />
           </div>
           <div>
             <label className={labelClass}>{dict.bookingWidget.adults}</label>

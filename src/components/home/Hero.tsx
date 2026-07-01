@@ -8,7 +8,7 @@ export function Hero({ locale, dict }: { locale: Locale; dict: Dictionary }) {
     <section className="relative flex min-h-[92vh] items-end overflow-hidden bg-midnight">
       <div
         className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url(https://picsum.photos/seed/baeco-hero/2000/1400)" }}
+        style={{ backgroundImage: "url(/images/hero/955003c3edb995693e4f9f327f5498f4.jpg)" }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/70 to-midnight/20" />
 

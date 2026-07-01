@@ -4,6 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
+
+const today = () => new Date().toISOString().slice(0, 10);
+const tomorrow = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
+};
 
 interface RoomHit {
   id: string;
@@ -14,6 +22,8 @@ interface RoomHit {
 
 export function RoomFinderChat({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const [open, setOpen] = useState(false);
+  const [checkIn, setCheckIn] = useState(today());
+  const [checkOut, setCheckOut] = useState(tomorrow());
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [budget, setBudget] = useState("");
@@ -32,6 +42,8 @@ export function RoomFinderChat({ locale, dict }: { locale: Locale; dict: Diction
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           locale,
+          checkIn,
+          checkOut,
           adults,
           children,
           budgetPerNight: budget ? Number(budget) : undefined,
@@ -70,6 +82,20 @@ export function RoomFinderChat({ locale, dict }: { locale: Locale; dict: Diction
         </button>
       </div>
       <p className="mt-2 text-sm text-stone">{dict.ai.roomFinder.subtitle}</p>
+
+      <div className="mt-6">
+        <DateRangePicker
+          checkIn={checkIn}
+          checkOut={checkOut}
+          locale={locale}
+          checkInLabel={dict.bookingWidget.checkIn}
+          checkOutLabel={dict.bookingWidget.checkOut}
+          onChange={({ checkIn: ci, checkOut: co }) => {
+            setCheckIn(ci);
+            setCheckOut(co);
+          }}
+        />
+      </div>
 
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <label className="text-xs text-stone">
