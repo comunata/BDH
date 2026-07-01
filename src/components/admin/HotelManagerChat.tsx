@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n";
+import { AiAvatar } from "@/components/ai/AiAvatar";
 
 interface Turn {
   role: "user" | "assistant";
@@ -37,7 +38,10 @@ export function HotelManagerChat({ locale, dict }: { locale: Locale; dict: Dicti
 
   return (
     <div className="rounded-sm border border-platinum/15 bg-graphite p-6 md:p-8">
-      <p className="font-display text-2xl text-ivory">{dict.ai.hotelManager.title}</p>
+      <div className="flex items-center gap-3">
+        <AiAvatar kind="hotelManager" size={40} />
+        <p className="font-display text-2xl text-ivory">{dict.ai.hotelManager.title}</p>
+      </div>
       <p className="mt-2 text-sm text-stone">{dict.ai.hotelManager.subtitle}</p>
 
       <div className="mt-6 max-h-[420px] space-y-4 overflow-y-auto">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n";
+import { AiAvatar } from "@/components/ai/AiAvatar";
 
 interface ServiceHit {
   id: string;
@@ -45,7 +46,10 @@ export function UpsellRecommendations({ code, locale, dict }: { code: string; lo
 
   return (
     <div className="mt-8 rounded-sm border border-champagne/30 bg-graphite/60 p-6">
-      <h2 className="font-display text-xl text-ivory">{dict.ai.upsell.title}</h2>
+      <div className="flex items-center gap-3">
+        <AiAvatar kind="upsell" size={32} />
+        <h2 className="font-display text-xl text-ivory">{dict.ai.upsell.title}</h2>
+      </div>
       <p className="mt-1 text-sm text-stone">{dict.ai.upsell.subtitle}</p>
       {loading && <p className="mt-4 text-xs text-stone">{dict.ai.upsell.loading}</p>}
       {!loading && answer && (

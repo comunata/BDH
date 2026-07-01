@@ -5,6 +5,7 @@ import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
+import { AiAvatar } from "@/components/ai/AiAvatar";
 
 interface Message {
   role: "user" | "assistant";
@@ -50,7 +51,10 @@ export function ChatWidget({ locale, dict }: { locale: Locale; dict: Dictionary 
       {open && (
         <div className="mb-4 flex h-[28rem] w-[22rem] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-sm border border-platinum/20 bg-graphite shadow-2xl animate-fade-up">
           <div className="flex items-center justify-between border-b border-platinum/10 px-4 py-3">
-            <p className="font-display text-lg text-ivory">{dict.ai.concierge.title}</p>
+            <div className="flex items-center gap-3">
+              <AiAvatar kind="concierge" size={32} />
+              <p className="font-display text-lg text-ivory">{dict.ai.concierge.title}</p>
+            </div>
             <button onClick={() => setOpen(false)} className="text-stone hover:text-ivory">
               ✕
             </button>
@@ -90,12 +94,10 @@ export function ChatWidget({ locale, dict }: { locale: Locale; dict: Dictionary 
       )}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-champagne text-midnight shadow-xl transition-transform hover:scale-105"
+        className="shadow-xl transition-transform hover:scale-105"
         aria-label={dict.ai.concierge.title}
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M4 4h16v12H7l-3 3V4z" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+        <AiAvatar kind="concierge" size={56} />
       </button>
     </div>
   );

@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n";
 import { DateRangePicker } from "@/components/ui/DateRangePicker";
+import { AiAvatar } from "@/components/ai/AiAvatar";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const tomorrow = () => {
@@ -65,8 +66,9 @@ export function RoomFinderChat({ locale, dict }: { locale: Locale; dict: Diction
       <div className="mt-10 flex justify-center">
         <button
           onClick={() => setOpen(true)}
-          className="rounded-full border border-champagne/40 bg-graphite px-6 py-3 text-xs font-medium uppercase tracking-widest text-champagne hover:bg-champagne/10"
+          className="flex items-center gap-3 rounded-full border border-champagne/40 bg-graphite px-6 py-3 text-xs font-medium uppercase tracking-widest text-champagne hover:bg-champagne/10"
         >
+          <AiAvatar kind="roomFinder" size={28} />
           {dict.ai.roomFinder.cta}
         </button>
       </div>
@@ -76,7 +78,10 @@ export function RoomFinderChat({ locale, dict }: { locale: Locale; dict: Diction
   return (
     <div className="mt-10 rounded-sm border border-platinum/15 bg-graphite p-6 md:p-8">
       <div className="flex items-center justify-between">
-        <p className="font-display text-2xl text-ivory">{dict.ai.roomFinder.title}</p>
+        <div className="flex items-center gap-3">
+          <AiAvatar kind="roomFinder" size={36} />
+          <p className="font-display text-2xl text-ivory">{dict.ai.roomFinder.title}</p>
+        </div>
         <button onClick={() => setOpen(false)} className="text-xs uppercase tracking-widest text-stone hover:text-ivory">
           ✕
         </button>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Dictionary } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n/config";
+import { AiAvatar } from "@/components/ai/AiAvatar";
 
 interface Message {
   role: "user" | "assistant";
@@ -57,6 +58,10 @@ export function PortalAiChat({ locale, dict }: { locale: Locale; dict: Dictionar
 
   return (
     <div className="flex h-[32rem] flex-col rounded-sm border border-platinum/15 bg-graphite">
+      <div className="flex items-center gap-3 border-b border-platinum/10 p-4">
+        <AiAvatar kind="concierge" size={32} />
+        <p className="font-display text-lg text-ivory">{dict.ai.concierge.title}</p>
+      </div>
       <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto p-6">
         {messages.length === 0 && <p className="text-sm text-stone">{dict.ai.concierge.disclaimer}</p>}
         {messages.map((m, i) => (

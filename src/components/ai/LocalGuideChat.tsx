@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n";
+import { AiAvatar } from "@/components/ai/AiAvatar";
 
 export function LocalGuideChat({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const [messages, setMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
@@ -38,7 +39,10 @@ export function LocalGuideChat({ locale, dict }: { locale: Locale; dict: Diction
 
   return (
     <div className="rounded-sm border border-platinum/15 bg-graphite p-6 md:p-8">
-      <p className="font-display text-2xl text-ivory">{dict.ai.localGuide.title}</p>
+      <div className="flex items-center gap-3">
+        <AiAvatar kind="localGuide" size={40} />
+        <p className="font-display text-2xl text-ivory">{dict.ai.localGuide.title}</p>
+      </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {suggestions.map((s) => (
           <button key={s} onClick={() => send(s)} className="rounded-full border border-champagne/30 px-3 py-1.5 text-xs text-champagne hover:bg-champagne/10">
