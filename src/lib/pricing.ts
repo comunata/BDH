@@ -1,9 +1,18 @@
 import type { Room, Season, ExtraService, Promotion, GiftVoucher, BookingGuestCounts, BookingExtra, PriceBreakdown, PriceLine } from "@/lib/types";
+import type { RoomRateOverride } from "@/lib/data/seasons";
 
 export const FREE_CHILD_AGE_THRESHOLD = 6;
 export const TOURIST_TAX_PER_PERSON_PER_NIGHT = 2;
 export const WEEKLY_STAY_DISCOUNT = 0.05;
 export const WEEKLY_STAY_MIN_NIGHTS = 7;
+
+/** Book at least this many days before check-in to get the early-booking discount. */
+export const EARLY_BOOKING_MIN_DAYS_AHEAD = 30;
+export const EARLY_BOOKING_DISCOUNT = 0.1;
+
+/** Book within this many days of check-in to get the last-minute discount. */
+export const LAST_MINUTE_MAX_DAYS_AHEAD = 3;
+export const LAST_MINUTE_DISCOUNT = 0.15;
 
 export function eachNight(checkIn: string, checkOut: string): Date[] {
   const start = new Date(`${checkIn}T00:00:00`);
@@ -41,24 +50,45 @@ export interface PricingInput {
   services: ExtraService[];
   promotion?: Promotion;
   voucher?: GiftVoucher;
+  rateOverrides?: RoomRateOverride[];
+  /** Injectable for tests; defaults to the real current time. */
+  now?: Date;
   currency?: string;
 }
 
+/** Throws a descriptive error the API routes turn into a 422 response. */
+export function assertMinNightsSatisfied(checkIn: string, checkOut: string, seasons: Season[]): void {
+  const nights = eachNight(checkIn, checkOut);
+  for (const night of nights) {
+    const season = seasonForDate(night, seasons);
+    if (season?.minNights && nights.length < season.minNights) {
+      throw new Error(`min_nights_${season.minNights}`);
+    }
+  }
+}
+
 export function calculateBookingPrice(input: PricingInput): PriceBreakdown {
-  const { room, checkIn, checkOut, guests, extras, seasons, services, promotion, voucher, currency = "EUR" } = input;
+  const { room, checkIn, checkOut, guests, extras, seasons, services, promotion, voucher, rateOverrides = [], now = new Date(), currency = "EUR" } = input;
   const nights = eachNight(checkIn, checkOut);
   if (nights.length < 1) {
     throw new Error("invalid_dates");
   }
+
+  assertMinNightsSatisfied(checkIn, checkOut, seasons);
 
   const lines: PriceLine[] = [];
 
   let roomSubtotal = 0;
   for (const night of nights) {
     const season = seasonForDate(night, seasons);
-    const seasonMultiplier = season?.multiplier ?? 1;
+    const override = season ? rateOverrides.find((r) => r.roomId === room.id && r.seasonId === season.id) : undefined;
     const weekendMultiplier = season && isWeekendNight(night) ? season.weekendMultiplier : 1;
-    roomSubtotal += room.basePrice * seasonMultiplier * weekendMultiplier;
+    if (override && override.overridePrice != null) {
+      roomSubtotal += override.overridePrice * weekendMultiplier;
+    } else {
+      const seasonMultiplier = season?.multiplier ?? 1;
+      roomSubtotal += room.basePrice * seasonMultiplier * weekendMultiplier;
+    }
   }
 
   let weeklyDiscount = 0;
@@ -67,6 +97,21 @@ export function calculateBookingPrice(input: PricingInput): PriceBreakdown {
     lines.push({ label: `Reducere sejur ${nights.length}+ nopți`, amount: -weeklyDiscount });
   }
   roomSubtotal -= weeklyDiscount;
+
+  // Early-booking / last-minute dynamic pricing, based on how far ahead of
+  // check-in the reservation is made. Mutually exclusive; early booking is
+  // checked first since a farther-ahead booking is the more common case.
+  const daysAhead = (new Date(`${checkIn}T00:00:00`).getTime() - now.getTime()) / 86_400_000;
+  let dynamicDiscount = 0;
+  if (daysAhead >= EARLY_BOOKING_MIN_DAYS_AHEAD) {
+    dynamicDiscount = roomSubtotal * EARLY_BOOKING_DISCOUNT;
+    lines.push({ label: "Reducere early booking", amount: -dynamicDiscount });
+  } else if (daysAhead >= 0 && daysAhead <= LAST_MINUTE_MAX_DAYS_AHEAD) {
+    dynamicDiscount = roomSubtotal * LAST_MINUTE_DISCOUNT;
+    lines.push({ label: "Reducere last minute", amount: -dynamicDiscount });
+  }
+  roomSubtotal -= dynamicDiscount;
+
   lines.unshift({ label: `Cazare (${nights.length} ${nights.length === 1 ? "noapte" : "nopți"})`, amount: roomSubtotal });
 
   const chargeableGuests = chargeableGuestCount(guests);
