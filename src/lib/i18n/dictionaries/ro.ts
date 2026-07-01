@@ -332,6 +332,7 @@ const ro = {
   whatsapp: {
     confirmation: "Bună {{guestName}}! Rezervarea ta la {{propertyName}} pentru {{roomName}} ({{checkIn}} - {{checkOut}}) este confirmată. Cod rezervare: {{bookingCode}}.",
     adminNotification: "Rezervare nouă: {{guestName}}, {{roomName}}, {{checkIn}} - {{checkOut}}.",
+    cancellation: "Bună {{guestName}}, rezervarea ta pentru {{roomName}} ({{checkIn}} - {{checkOut}}) a fost anulată. Cod rezervare: {{bookingCode}}.",
     followUp: "Bună {{guestName}}, sperăm că te-ai bucurat de sejur. Ne-ar plăcea să auzim părerea ta!",
     aiHandoff: "Salut! Am fost redirecționat de asistentul AI de pe site pentru o întrebare: \"{{question}}\"",
   },

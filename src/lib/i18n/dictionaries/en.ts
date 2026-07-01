@@ -334,6 +334,7 @@ const en: Dictionary = {
   whatsapp: {
     confirmation: "Hi {{guestName}}! Your booking at {{propertyName}} for {{roomName}} ({{checkIn}} - {{checkOut}}) is confirmed. Booking code: {{bookingCode}}.",
     adminNotification: "New booking: {{guestName}}, {{roomName}}, {{checkIn}} - {{checkOut}}.",
+    cancellation: "Hi {{guestName}}, your booking for {{roomName}} ({{checkIn}} - {{checkOut}}) has been cancelled. Booking code: {{bookingCode}}.",
     followUp: "Hi {{guestName}}, we hope you enjoyed your stay. We'd love to hear your feedback!",
     aiHandoff: "Hello! I was redirected by the website's AI assistant with a question: \"{{question}}\"",
   },

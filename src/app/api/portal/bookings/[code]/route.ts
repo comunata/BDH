@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getBookingByCode, cancelBooking, updateSpecialRequests, canCancelFreely } from "@/lib/data/bookings";
+import { getRoomById } from "@/lib/data/rooms";
 import { getPortalSession } from "@/lib/portal/session";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendEmail } from "@/lib/integrations/email";
+import { sendWhatsappTemplate } from "@/lib/integrations/whatsapp";
+import { getDictionary } from "@/lib/i18n";
+import { defaultLocale } from "@/lib/i18n/config";
+import { renderTemplate } from "@/lib/i18n/template";
+import { formatDate } from "@/lib/utils";
+import { siteConfig } from "@/config/site";
 
 const patchSchema = z.object({
   action: z.enum(["cancel", "special_requests"]),
@@ -37,6 +45,37 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   if (parsed.data.action === "cancel") {
     const free = canCancelFreely(booking.checkIn);
     const updated = await cancelBooking(code);
+
+    // Notify the guest by email + WhatsApp (best-effort — a delivery
+    // failure here must not roll back or fail the cancellation itself).
+    const dict = getDictionary(defaultLocale);
+    const room = await getRoomById(booking.roomId);
+    const roomName = room?.name[defaultLocale] ?? room?.name.en ?? booking.roomId;
+    const vars = {
+      propertyName: siteConfig.name,
+      guestName: `${booking.guest.firstName} ${booking.guest.lastName}`,
+      roomName,
+      checkIn: formatDate(booking.checkIn, "ro-RO"),
+      checkOut: formatDate(booking.checkOut, "ro-RO"),
+      bookingCode: booking.code,
+    };
+    try {
+      await sendEmail({
+        to: booking.guest.email,
+        subject: renderTemplate(dict.emails.cancellation.subject, vars),
+        html: `<h1>${renderTemplate(dict.emails.cancellation.heading, vars)}</h1><p>${renderTemplate(
+          dict.emails.cancellation.body,
+          vars
+        )}</p><p>${dict.booking.summary}: ${booking.code}</p>`,
+      });
+      if (booking.guest.phone) {
+        await sendWhatsappTemplate(booking.guest.phone, renderTemplate(dict.whatsapp.cancellation, vars));
+      }
+    } catch {
+      // Notification failures are logged by the integration adapters
+      // themselves (mock mode logs to console); never block cancellation.
+    }
+
     return NextResponse.json({ booking: updated, freeCancellation: free });
   }
 
