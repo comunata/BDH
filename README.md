@@ -100,6 +100,22 @@ Totul trece prin chei de traducere (`src/lib/i18n/dictionaries/*`), niciun text 
 - Traducere profesională DE/FR/IT/ES (structura e deja pregătită, doar textul lipsește)
 - Integrări channel manager (Booking.com/Airbnb/Expedia), PMS, smart locks, POS, e-Factura, CRM — interfața e pregătită, implementarea depinde de providerul ales
 
+## Backup
+
+Supabase (planurile Pro+) rulează backup automat zilnic (point-in-time recovery pe planurile superioare) — vezi Dashboard → Project Settings → Database → Backups. Pe planul Free nu există backup automat, așa că am adăugat un script suplimentar, simplu, pentru backup logic on-demand/programat:
+
+```bash
+SUPABASE_DB_URL="postgresql://postgres:[parola]@db.[project-ref].supabase.co:5432/postgres" npm run backup:db
+```
+
+Scriptul (`scripts/backup-db.sh`) rulează `pg_dump`, comprimă rezultatul în `./backups/` și păstrează implicit ultimele 14 backup-uri (`BACKUP_RETENTION`). Restaurare:
+
+```bash
+gunzip -c backups/baeco-db-<timestamp>.sql.gz | psql "$SUPABASE_DB_URL"
+```
+
+Poate fi programat cu cron/CI pentru rulare zilnică; conexiunea și instrucțiunile complete sunt documentate în comentariile din script.
+
 ## Verificare
 
 ```bash
