@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getRoomBySlug } from "@/lib/data/rooms";
 import { getServices } from "@/lib/data/services";
-import { getSeasons } from "@/lib/data/seasons";
-import { getPromotionByCode, getVoucherByCode } from "@/lib/data/promotions";
-import { calculateBookingPrice } from "@/lib/pricing";
+import { getSeasons, getRoomRateOverrides } from "@/lib/data/seasons";
+import { getPromotionByCode, getVoucherByCode, validatePromotionForStay } from "@/lib/data/promotions";
+import { calculateBookingPrice, eachNight } from "@/lib/pricing";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const quoteSchema = z.object({
   roomSlug: z.string().min(1),
@@ -19,6 +20,9 @@ const quoteSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const rateLimited = checkRateLimit(request, "booking-quote");
+  if (rateLimited) return rateLimited;
+
   const body = await request.json().catch(() => null);
   const parsed = quoteSchema.safeParse(body);
   if (!parsed.success) {
@@ -37,12 +41,35 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "capacity_exceeded" }, { status: 422 });
   }
 
-  const [services, seasons, promotion, voucher] = await Promise.all([
+  // If a promo code was supplied but doesn't resolve to an active/valid
+  // promotion, fail loudly instead of silently ignoring it — the client
+  // must not be able to tell the difference between "no code" and "bad code".
+  if (input.promoCode && input.promoCode.trim()) {
+    const promoCandidate = await getPromotionByCode(input.promoCode);
+    if (!promoCandidate) {
+      return NextResponse.json({ error: "promo_invalid" }, { status: 400 });
+    }
+  }
+  if (input.voucherCode && input.voucherCode.trim()) {
+    const voucherCandidate = await getVoucherByCode(input.voucherCode);
+    if (!voucherCandidate) {
+      return NextResponse.json({ error: "voucher_invalid" }, { status: 400 });
+    }
+  }
+
+  const [services, seasons, rateOverrides, promotion, voucher] = await Promise.all([
     getServices(),
     getSeasons(),
+    getRoomRateOverrides(),
     input.promoCode ? getPromotionByCode(input.promoCode) : Promise.resolve(undefined),
     input.voucherCode ? getVoucherByCode(input.voucherCode) : Promise.resolve(undefined),
   ]);
+
+  if (promotion) {
+    const nights = eachNight(input.checkIn, input.checkOut).length;
+    const promoError = validatePromotionForStay(promotion, { nights, subtotal: room.basePrice * nights });
+    if (promoError) return NextResponse.json({ error: promoError }, { status: 400 });
+  }
 
   try {
     const breakdown = calculateBookingPrice({
@@ -55,13 +82,15 @@ export async function POST(request: NextRequest) {
       services,
       promotion,
       voucher,
+      rateOverrides,
     });
     return NextResponse.json({
       breakdown,
       promoApplied: Boolean(promotion),
       voucherApplied: Boolean(voucher),
     });
-  } catch {
-    return NextResponse.json({ error: "invalid_dates" }, { status: 422 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "invalid_dates";
+    return NextResponse.json({ error: message }, { status: 422 });
   }
 }

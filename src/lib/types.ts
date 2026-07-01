@@ -58,6 +58,10 @@ export interface Promotion {
   maxRedemptions?: number;
   redemptions: number;
   active: boolean;
+  /** Minimum number of nights the stay must cover for the code to apply. */
+  minNights?: number;
+  /** Minimum pre-discount subtotal (room + extras) required for the code to apply. */
+  minSubtotal?: number;
 }
 
 export interface GiftVoucher {

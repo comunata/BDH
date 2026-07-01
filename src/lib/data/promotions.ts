@@ -53,3 +53,25 @@ export async function getVoucherByCode(code: string): Promise<GiftVoucher | unde
   }
   return seedVouchers.find((v) => v.code === normalized && v.active && new Date(v.expiresAt) >= new Date());
 }
+
+/**
+ * Validates that a promotion code is usable for the given stay, beyond the
+ * active/date-range checks already applied in getPromotionByCode. Returns an
+ * error code string (suitable for a 400 API response) when invalid, or
+ * undefined when the promotion may be applied.
+ */
+export function validatePromotionForStay(
+  promotion: Promotion,
+  params: { nights: number; subtotal: number }
+): string | undefined {
+  if (promotion.maxRedemptions != null && promotion.redemptions >= promotion.maxRedemptions) {
+    return "promo_exhausted";
+  }
+  if (promotion.minNights != null && params.nights < promotion.minNights) {
+    return `promo_min_nights_${promotion.minNights}`;
+  }
+  if (promotion.minSubtotal != null && params.subtotal < promotion.minSubtotal) {
+    return `promo_min_subtotal_${promotion.minSubtotal}`;
+  }
+  return undefined;
+}
