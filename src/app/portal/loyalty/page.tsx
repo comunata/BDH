@@ -1,6 +1,7 @@
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getPortalSession } from "@/lib/portal/session";
 import { getBookingsForGuestEmail } from "@/lib/data/bookings";
+import { renderTemplate } from "@/lib/i18n/template";
 
 const POINTS_PER_EUR = 1;
 const TIERS = [
@@ -24,10 +25,14 @@ export default async function PortalLoyaltyPage() {
     <div>
       <h1 className="mb-8 font-display text-3xl text-ivory">{dict.portal.loyaltyPoints}</h1>
       <div className="rounded-sm border border-champagne/30 bg-graphite p-8">
-        <p className="text-xs uppercase tracking-widest text-stone">Nivel actual</p>
+        <p className="text-xs uppercase tracking-widest text-stone">{dict.portal.loyaltyCurrentTier}</p>
         <p className="mt-1 font-display text-3xl text-champagne">{tier.name}</p>
-        <p className="mt-4 text-sm text-stone">{points} puncte acumulate</p>
-        {nextTier && <p className="mt-1 text-sm text-stone">Mai ai nevoie de {nextTier.min - points} puncte pentru {nextTier.name}.</p>}
+        <p className="mt-4 text-sm text-stone">{points} {dict.portal.loyaltyPointsEarned}</p>
+        {nextTier && (
+          <p className="mt-1 text-sm text-stone">
+            {renderTemplate(dict.portal.loyaltyPointsToNextTier, { points: nextTier.min - points, tier: nextTier.name })}
+          </p>
+        )}
       </div>
     </div>
   );

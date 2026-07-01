@@ -4,6 +4,7 @@ import { getAttractions, getLocalEvents } from "@/lib/data/explore";
 import { completeChat, isAiConfigured } from "@/lib/integrations/ai";
 import { getDictionary } from "@/lib/i18n";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
+import { checkRateLimit } from "@/lib/rate-limit";
 import type { Attraction } from "@/lib/types";
 
 const requestSchema = z.object({
@@ -20,6 +21,9 @@ function describe(a: Attraction, locale: Locale) {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = checkRateLimit(request, "ai-local-guide", { maxRequests: 15, windowMs: 60_000 });
+  if (limited) return limited;
+
   const body = await request.json().catch(() => null);
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "invalid_input" }, { status: 400 });

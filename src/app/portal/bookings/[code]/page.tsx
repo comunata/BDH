@@ -1,16 +1,22 @@
 import { notFound } from "next/navigation";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { getPortalSession } from "@/lib/portal/session";
 import { getBookingByCode, canCancelFreely } from "@/lib/data/bookings";
 import { getRoomBySlug, getRooms } from "@/lib/data/rooms";
 import { StatusBadge } from "@/components/admin/AdminTable";
 import { BookingDetailClient } from "@/components/portal/BookingDetailClient";
+import { UpsellRecommendations } from "@/components/portal/UpsellRecommendations";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default async function PortalBookingDetailPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  const { dict } = await getServerDictionary();
+  const { dict, locale } = await getServerDictionary();
+  const session = await getPortalSession();
   const booking = await getBookingByCode(code);
-  if (!booking) notFound();
+  // Only the guest owning the booking may view its details/invoice — the
+  // portal layout already guarantees `session.authenticated`, but the code
+  // in the URL is guessable, so we still enforce email ownership here.
+  if (!booking || booking.guest.email.toLowerCase() !== session.email.toLowerCase()) notFound();
 
   const rooms = await getRooms();
   const room = rooms.find((r) => r.id === booking.roomId) ?? (await getRoomBySlug(booking.roomId));
@@ -26,23 +32,25 @@ export default async function PortalBookingDetailPage({ params }: { params: Prom
           <Field label={dict.footer.checkIn} value={formatDate(booking.checkIn)} />
           <Field label={dict.footer.checkOut} value={formatDate(booking.checkOut)} />
           <Field label={dict.common.guests} value={`${booking.guests.adults} + ${booking.guests.children}`} />
-          <Field label="Cod" value={booking.code} />
+          <Field label={dict.common.bookingCode} value={booking.code} />
         </div>
         <p className="mt-6 font-display text-2xl text-champagne">{room?.name.ro}</p>
         <a href={`/api/portal/bookings/${booking.code}/ics`} className="mt-3 inline-block text-xs uppercase tracking-widest text-champagne underline">
-          Export calendar (.ics)
+          {dict.portal.exportCalendar}
         </a>
 
         <div className="mt-10">
           <BookingDetailClient booking={booking} dict={dict} canCancelFree={canCancelFreely(booking.checkIn)} />
         </div>
+
+        {booking.status !== "cancelled" && <UpsellRecommendations code={booking.code} locale={locale} dict={dict} />}
       </div>
 
       <aside>
         <h2 className="font-display text-xl text-ivory">{dict.portal.invoices}</h2>
         <div className="mt-4 rounded-sm border border-platinum/15 bg-graphite p-6 text-sm">
-          <Row label="Cazare" value={formatCurrency(booking.totals.roomSubtotal, booking.totals.currency)} />
-          <Row label="Servicii extra" value={formatCurrency(booking.totals.extrasSubtotal, booking.totals.currency)} />
+          <Row label={dict.common.accommodationCost} value={formatCurrency(booking.totals.roomSubtotal, booking.totals.currency)} />
+          <Row label={dict.common.extraServicesCost} value={formatCurrency(booking.totals.extrasSubtotal, booking.totals.currency)} />
           <Row label={dict.common.discount} value={`- ${formatCurrency(booking.totals.discountAmount, booking.totals.currency)}`} />
           <Row label={dict.common.taxes} value={formatCurrency(booking.totals.taxAmount, booking.totals.currency)} />
           <div className="mt-3 flex justify-between border-t border-platinum/10 pt-3 font-display text-lg text-champagne">

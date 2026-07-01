@@ -18,6 +18,17 @@ export default async function AdminDashboardPage() {
   const occupancyRate = rooms.length ? Math.round((occupiedRoomIds.size / rooms.length) * 100) : 0;
   const freeRooms = rooms.length - occupiedRoomIds.size;
 
+  const checkInsToday = activeBookings.filter((b) => b.checkIn === today);
+  const checkOutsToday = activeBookings.filter((b) => b.checkOut === today);
+
+  const currentMonth = today.slice(0, 7);
+  const revenueToday = activeBookings
+    .filter((b) => b.createdAt.slice(0, 10) === today)
+    .reduce((sum, b) => sum + b.totals.total, 0);
+  const revenueThisMonth = activeBookings
+    .filter((b) => b.createdAt.slice(0, 7) === currentMonth)
+    .reduce((sum, b) => sum + b.totals.total, 0);
+
   const upcomingRevenue = activeBookings
     .filter((b) => b.checkIn >= today)
     .reduce((sum, b) => sum + b.totals.total, 0);
@@ -57,10 +68,55 @@ export default async function AdminDashboardPage() {
       <AdminPageHeader title={dict.admin.dashboard.title} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label={dict.admin.dashboard.todayBookings} value={String(todayBookings.length)} />
+        <StatCard label="Venit azi" value={formatCurrency(revenueToday)} />
+        <StatCard label="Venit luna curentă" value={formatCurrency(revenueThisMonth)} />
         <StatCard label={dict.admin.dashboard.occupancy} value={`${occupancyRate}%`} />
-        <StatCard label={dict.admin.dashboard.estimatedRevenue} value={formatCurrency(upcomingRevenue)} />
         <StatCard label={dict.admin.dashboard.freeRooms} value={String(freeRooms)} />
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label={dict.admin.dashboard.todayBookings} value={String(todayBookings.length)} />
+        <StatCard label="Venit viitor (rezervări confirmate)" value={formatCurrency(upcomingRevenue)} />
+        <StatCard label="Check-in azi" value={String(checkInsToday.length)} />
+        <StatCard label="Check-out azi" value={String(checkOutsToday.length)} />
+      </div>
+
+      <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <div className="rounded-sm border border-platinum/10 bg-graphite/60 p-6">
+          <h2 className="font-display text-xl text-ivory">Check-in azi</h2>
+          <ul className="mt-4 space-y-3">
+            {checkInsToday.length === 0 && <li className="text-sm text-stone">Niciun check-in azi.</li>}
+            {checkInsToday.map((b) => {
+              const room = rooms.find((r) => r.id === b.roomId);
+              return (
+                <li key={b.id} className="flex justify-between text-sm">
+                  <span className="text-ivory">
+                    {b.guest.firstName} {b.guest.lastName}
+                  </span>
+                  <span className="text-champagne">{room?.name.ro ?? "—"}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        <div className="rounded-sm border border-platinum/10 bg-graphite/60 p-6">
+          <h2 className="font-display text-xl text-ivory">Check-out azi</h2>
+          <ul className="mt-4 space-y-3">
+            {checkOutsToday.length === 0 && <li className="text-sm text-stone">Niciun check-out azi.</li>}
+            {checkOutsToday.map((b) => {
+              const room = rooms.find((r) => r.id === b.roomId);
+              return (
+                <li key={b.id} className="flex justify-between text-sm">
+                  <span className="text-ivory">
+                    {b.guest.firstName} {b.guest.lastName}
+                  </span>
+                  <span className="text-champagne">{room?.name.ro ?? "—"}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">

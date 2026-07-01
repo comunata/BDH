@@ -1,4 +1,5 @@
 import { getServerDictionary } from "@/lib/i18n/server";
+import { requireAdminRole } from "@/lib/admin/session";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
 
@@ -10,6 +11,7 @@ const roles = [
 ];
 
 export default async function AdminRolesPage() {
+  await requireAdminRole("owner", "manager");
   const { dict } = await getServerDictionary();
 
   return (

@@ -1,8 +1,10 @@
 import "server-only";
+import { randomBytes } from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { seedBookings } from "./seed/bookings";
+import { getRoomBlocks } from "./availability";
 import type { Booking } from "@/lib/types";
 
 /**
@@ -14,8 +16,21 @@ import type { Booking } from "@/lib/types";
  */
 const memoryBookings: Booking[] = [...seedBookings];
 
+/**
+ * Booking codes are guessable/enumerable identifiers used to look up and
+ * (via the portal) cancel/edit reservations, so they must not be predictable.
+ * Math.random() is not a CSPRNG; crypto.randomBytes is, and this produces a
+ * longer, base32-ish code with no ambiguous characters (0/O, 1/I removed).
+ */
+const BOOKING_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
 export function generateBookingCode(): string {
-  return `BH-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  const bytes = randomBytes(10);
+  let code = "";
+  for (const byte of bytes) {
+    code += BOOKING_CODE_ALPHABET[byte % BOOKING_CODE_ALPHABET.length];
+  }
+  return `BH-${code}`;
 }
 
 export async function createBooking(booking: Booking): Promise<Booking> {
@@ -47,9 +62,21 @@ export async function getBookingsForRoom(roomId: string, from: string, to: strin
   return memoryBookings.filter((b) => b.roomId === roomId && b.status !== "cancelled" && b.checkIn < to && b.checkOut > from);
 }
 
+/**
+ * Live availability: a room is available only if it has no overlapping
+ * active bookings AND none of its nights fall inside a manual room_blocks
+ * range (maintenance/closure, set from /admin/availability).
+ */
 export async function isRoomAvailable(roomId: string, checkIn: string, checkOut: string): Promise<boolean> {
-  const overlapping = await getBookingsForRoom(roomId, checkIn, checkOut);
-  return overlapping.length === 0;
+  const [overlapping, blocks] = await Promise.all([getBookingsForRoom(roomId, checkIn, checkOut), getRoomBlocks()]);
+  if (overlapping.length > 0) return false;
+
+  const roomBlocks = blocks.filter((b) => b.roomId === roomId);
+  if (roomBlocks.length === 0) return true;
+
+  // A block [start, end) overlaps the requested stay [checkIn, checkOut) if
+  // it starts before the stay ends and ends after the stay starts.
+  return !roomBlocks.some((b) => b.startDate < checkOut && b.endDate > checkIn);
 }
 
 export async function getAllBookings(): Promise<Booking[]> {

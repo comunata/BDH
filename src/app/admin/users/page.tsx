@@ -1,6 +1,7 @@
 import { getServerDictionary } from "@/lib/i18n/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdminRole } from "@/lib/admin/session";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminTable } from "@/components/admin/AdminTable";
 
@@ -12,6 +13,9 @@ interface UserRow {
 }
 
 export default async function AdminUsersPage() {
+  // Only owner/manager may view or manage staff accounts and roles —
+  // staff-level admins should not see the full user/role list.
+  await requireAdminRole("owner", "manager");
   const { dict } = await getServerDictionary();
 
   let users: UserRow[] = [];

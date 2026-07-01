@@ -45,8 +45,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <Section>
         <SectionHeading eyebrow={dict.nav.rooms} title={dict.home.sectionsRoomsTitle} subtitle={dict.home.sectionsRoomsSubtitle} />
         <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-          {rooms.slice(0, 3).map((room) => (
-            <RoomCard key={room.id} room={room} locale={locale} dict={dict} />
+          {rooms.slice(0, 3).map((room, index) => (
+            <RoomCard key={room.id} room={room} locale={locale} dict={dict} priority={index === 0} />
           ))}
         </div>
         <div className="mt-10 text-center">

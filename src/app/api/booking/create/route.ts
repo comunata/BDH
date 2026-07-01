@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getRoomBySlug } from "@/lib/data/rooms";
 import { getServices } from "@/lib/data/services";
-import { getSeasons } from "@/lib/data/seasons";
-import { getPromotionByCode, getVoucherByCode } from "@/lib/data/promotions";
-import { calculateBookingPrice } from "@/lib/pricing";
+import { getSeasons, getRoomRateOverrides } from "@/lib/data/seasons";
+import { getPromotionByCode, getVoucherByCode, validatePromotionForStay } from "@/lib/data/promotions";
+import { calculateBookingPrice, eachNight } from "@/lib/pricing";
 import { createBooking, generateBookingCode, isRoomAvailable } from "@/lib/data/bookings";
 import { sendEmail } from "@/lib/integrations/email";
 import { buildWhatsappLink } from "@/lib/integrations/whatsapp";
@@ -13,6 +13,7 @@ import { isLocale, defaultLocale } from "@/lib/i18n/config";
 import { renderTemplate } from "@/lib/i18n/template";
 import { formatDate } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
+import { checkRateLimit } from "@/lib/rate-limit";
 import type { Booking } from "@/lib/types";
 
 const createSchema = z.object({
@@ -36,6 +37,9 @@ const createSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const rateLimited = checkRateLimit(request, "booking-create");
+  if (rateLimited) return rateLimited;
+
   const body = await request.json().catch(() => null);
   const parsed = createSchema.safeParse(body);
   if (!parsed.success) {
@@ -61,24 +65,51 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "room_unavailable" }, { status: 409 });
   }
 
-  const [services, seasons, promotion, voucher] = await Promise.all([
+  if (input.promoCode && input.promoCode.trim()) {
+    const promoCandidate = await getPromotionByCode(input.promoCode);
+    if (!promoCandidate) {
+      return NextResponse.json({ error: "promo_invalid" }, { status: 400 });
+    }
+  }
+  if (input.voucherCode && input.voucherCode.trim()) {
+    const voucherCandidate = await getVoucherByCode(input.voucherCode);
+    if (!voucherCandidate) {
+      return NextResponse.json({ error: "voucher_invalid" }, { status: 400 });
+    }
+  }
+
+  const [services, seasons, rateOverrides, promotion, voucher] = await Promise.all([
     getServices(),
     getSeasons(),
+    getRoomRateOverrides(),
     input.promoCode ? getPromotionByCode(input.promoCode) : Promise.resolve(undefined),
     input.voucherCode ? getVoucherByCode(input.voucherCode) : Promise.resolve(undefined),
   ]);
 
-  const totals = calculateBookingPrice({
-    room,
-    checkIn: input.checkIn,
-    checkOut: input.checkOut,
-    guests: { adults: input.adults, children: input.children, childAges: input.childAges, infants: 0 },
-    extras: input.extras,
-    seasons,
-    services,
-    promotion,
-    voucher,
-  });
+  if (promotion) {
+    const nights = eachNight(input.checkIn, input.checkOut).length;
+    const promoError = validatePromotionForStay(promotion, { nights, subtotal: room.basePrice * nights });
+    if (promoError) return NextResponse.json({ error: promoError }, { status: 400 });
+  }
+
+  let totals;
+  try {
+    totals = calculateBookingPrice({
+      room,
+      checkIn: input.checkIn,
+      checkOut: input.checkOut,
+      guests: { adults: input.adults, children: input.children, childAges: input.childAges, infants: 0 },
+      extras: input.extras,
+      seasons,
+      services,
+      promotion,
+      voucher,
+      rateOverrides,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "invalid_dates";
+    return NextResponse.json({ error: message }, { status: 422 });
+  }
 
   const booking: Booking = {
     id: crypto.randomUUID(),
