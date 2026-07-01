@@ -180,6 +180,28 @@ const ro = {
       title: "AI Local Guide",
       placeholder: "Ex: Fă-mi un plan pentru 3 zile în zonă",
     },
+    roomFinder: {
+      cta: "Găsește camera potrivită cu AI",
+      title: "AI Room Finder",
+      subtitle: "Spune-ne ce îți dorești, iar noi recomandăm camerele potrivite din oferta reală.",
+      budgetLabel: "Buget/noapte",
+      preferencesLabel: "Dorințe",
+      preferencesPlaceholder: "Ex: balcon, vedere la mare, liniște",
+      submit: "Recomandă-mi o cameră",
+      noResults: "Nu am găsit camere disponibile care să corespundă exact criteriilor tale. Contactează-ne pentru opțiuni personalizate.",
+    },
+    upsell: {
+      title: "Recomandări personalizate",
+      subtitle: "Pe baza rezervării tale, iată câteva servicii care ți s-ar putea potrivi.",
+      loading: "Se generează recomandările...",
+      empty: "Nu avem recomandări suplimentare pentru această rezervare momentan.",
+    },
+    hotelManager: {
+      title: "AI Hotel Manager",
+      subtitle: "Întreabă orice despre ocupare, venituri sau camere libere — răspunsurile se bazează pe datele reale ale hotelului.",
+      placeholder: "Ex: Care e ocuparea de azi? Ce camere sunt libere weekendul acesta?",
+      submit: "Întreabă",
+    },
   },
   portal: {
     title: "Contul meu",
@@ -240,6 +262,7 @@ const ro = {
       users: "Utilizatori",
       roles: "Roluri",
       integrations: "Integrări",
+      aiManager: "AI Hotel Manager",
     },
     dashboard: {
       title: "Dashboard",

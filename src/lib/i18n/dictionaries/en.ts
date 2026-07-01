@@ -182,6 +182,28 @@ const en: Dictionary = {
       title: "AI Local Guide",
       placeholder: "e.g. Plan me 3 days in the area",
     },
+    roomFinder: {
+      cta: "Find your ideal room with AI",
+      title: "AI Room Finder",
+      subtitle: "Tell us what you're looking for and we'll recommend the right rooms from our real availability.",
+      budgetLabel: "Budget/night",
+      preferencesLabel: "Preferences",
+      preferencesPlaceholder: "e.g. balcony, sea view, quiet",
+      submit: "Recommend a room",
+      noResults: "We couldn't find rooms matching your exact criteria. Contact us for personalized options.",
+    },
+    upsell: {
+      title: "Personalized recommendations",
+      subtitle: "Based on your booking, here are a few services you might enjoy.",
+      loading: "Generating recommendations...",
+      empty: "No additional recommendations for this booking right now.",
+    },
+    hotelManager: {
+      title: "AI Hotel Manager",
+      subtitle: "Ask anything about occupancy, revenue, or free rooms — answers are grounded in real hotel data.",
+      placeholder: "e.g. What's today's occupancy? Which rooms are free this weekend?",
+      submit: "Ask",
+    },
   },
   portal: {
     title: "My account",
@@ -242,6 +264,7 @@ const en: Dictionary = {
       users: "Users",
       roles: "Roles",
       integrations: "Integrations",
+      aiManager: "AI Hotel Manager",
     },
     dashboard: {
       title: "Dashboard",
