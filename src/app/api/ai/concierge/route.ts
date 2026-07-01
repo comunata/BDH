@@ -8,6 +8,7 @@ import { completeChat } from "@/lib/integrations/ai";
 import { getDictionary } from "@/lib/i18n";
 import { isLocale, defaultLocale } from "@/lib/i18n/config";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const requestSchema = z.object({
   question: z.string().min(1).max(1000),
@@ -28,6 +29,9 @@ function scoreKnowledgeItem(question: string, keywords: string[]): number {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = checkRateLimit(request, "ai-concierge", { maxRequests: 20, windowMs: 60_000 });
+  if (limited) return limited;
+
   const body = await request.json().catch(() => null);
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "invalid_input" }, { status: 400 });
