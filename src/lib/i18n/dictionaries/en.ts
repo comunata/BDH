@@ -156,6 +156,7 @@ const en: Dictionary = {
     distance: "Distance",
     driveTime: "Estimated drive time",
     localProducers: "Local producers",
+    viewOnMap: "View on map",
     markets: "Markets",
     localShops: "Local shops",
   },

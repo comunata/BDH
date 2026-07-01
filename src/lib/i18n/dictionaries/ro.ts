@@ -154,6 +154,7 @@ const ro = {
     distance: "Distanță",
     driveTime: "Timp estimat cu mașina",
     localProducers: "Producători locali",
+    viewOnMap: "Vezi pe hartă",
     markets: "Piețe",
     localShops: "Magazine locale",
   },
