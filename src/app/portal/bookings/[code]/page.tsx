@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { getPortalSession } from "@/lib/portal/session";
 import { getBookingByCode, canCancelFreely } from "@/lib/data/bookings";
 import { getRoomBySlug, getRooms } from "@/lib/data/rooms";
 import { StatusBadge } from "@/components/admin/AdminTable";
@@ -9,8 +10,12 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 export default async function PortalBookingDetailPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const { dict } = await getServerDictionary();
+  const session = await getPortalSession();
   const booking = await getBookingByCode(code);
-  if (!booking) notFound();
+  // Only the guest owning the booking may view its details/invoice — the
+  // portal layout already guarantees `session.authenticated`, but the code
+  // in the URL is guessable, so we still enforce email ownership here.
+  if (!booking || booking.guest.email.toLowerCase() !== session.email.toLowerCase()) notFound();
 
   const rooms = await getRooms();
   const room = rooms.find((r) => r.id === booking.roomId) ?? (await getRoomBySlug(booking.roomId));
