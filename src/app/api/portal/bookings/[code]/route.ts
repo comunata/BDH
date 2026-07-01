@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getBookingByCode, cancelBooking, updateSpecialRequests, canCancelFreely } from "@/lib/data/bookings";
 import { getPortalSession } from "@/lib/portal/session";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const patchSchema = z.object({
   action: z.enum(["cancel", "special_requests"]),
@@ -9,6 +10,9 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ code: string }> }) {
+  const rateLimited = checkRateLimit(request, "portal-booking-patch");
+  if (rateLimited) return rateLimited;
+
   const { code } = await params;
   const booking = await getBookingByCode(code);
   if (!booking) return NextResponse.json({ error: "not_found" }, { status: 404 });
